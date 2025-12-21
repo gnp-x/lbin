@@ -13,9 +13,9 @@ struct UploadForm {
     file: TempFile,
 }
 
-const PORT: &'static str = env!("port");
-const HOST: &'static str = env!("host");
-const AUTH: &'static str = env!("auth");
+const PORT: &'static str = env!("lbin_port");
+const HOST: &'static str = env!("lbin_host");
+const AUTH: &'static str = env!("lbin_auth");
 
 #[post("/")]
 async fn save_files(
@@ -57,7 +57,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(TempFileConfig::default().directory("./tmp"))
             .service(save_files)
-            .service(Files::new("/", "./tmp").index_file("index.html"))
+            .service(Files::new("/", "./tmp").index_file("../index.html"))
     })
     .bind((HOST, PORT.parse().expect("Error converting port to number")))?
     .run()
