@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use actix_files::Files;
 use actix_multipart::form::{
     MultipartForm,
@@ -16,12 +18,16 @@ struct UploadForm {
 const PORT: &'static str = env!("lbin_port");
 const HOST: &'static str = env!("lbin_host");
 const AUTH: &'static str = env!("lbin_auth");
+const LIFESPAN: &'static str = env!("lbin_life");
 
 #[post("/")]
 async fn save_files(
     MultipartForm(form): MultipartForm<UploadForm>,
     cred: BearerAuth,
 ) -> Result<impl Responder, Error> {
+    let mut interval = tokio::time::interval(Duration::from_hours(
+        LIFESPAN.parse().expect("Unable to parse number"),
+    ));
     if cred.token() == AUTH {
         let mut file = String::new();
         let f = form.file;
@@ -38,6 +44,11 @@ async fn save_files(
                 file = format!("{}\n", &filename);
             }
             f.file.persist(&path).ok();
+            tokio::spawn(async move {
+                interval.tick().await;
+                interval.tick().await;
+                tokio::fs::remove_file(&path).await.ok();
+            });
         };
         let url = format!("http://{}:{}/{}", HOST, PORT, &file);
         Ok(HttpResponse::Ok().body(url))
@@ -48,6 +59,7 @@ async fn save_files(
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    std::fs::remove_dir_all("./tmp")?;
     std::fs::create_dir_all("./tmp")?;
     println!("Starting up file server on port {HOST}:{PORT}");
     HttpServer::new(|| {
