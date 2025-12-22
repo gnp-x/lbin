@@ -52,7 +52,8 @@ async fn save_files(
                     .expect("Unable to delete file");
             });
         };
-        let url = format!("http://{}:{}/{}", HOST, PORT, &file);
+        let url = format!("http://{}/{}", HOST, &file);
+        // let dev_url = format!("http://{}:{}/{}", HOST, PORT, &file);
         Ok(HttpResponse::Ok().body(url))
     } else {
         Ok(HttpResponse::Unauthorized().body("Invalid auth token.\n"))
