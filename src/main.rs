@@ -47,7 +47,9 @@ async fn save_files(
             tokio::spawn(async move {
                 interval.tick().await;
                 interval.tick().await;
-                tokio::fs::remove_file(&path).await.ok();
+                tokio::fs::remove_file(&path)
+                    .await
+                    .expect("Unable to delete file");
             });
         };
         let url = format!("http://{}:{}/{}", HOST, PORT, &file);
