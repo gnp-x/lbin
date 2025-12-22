@@ -62,8 +62,6 @@ async fn save_files(
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    std::fs::remove_dir_all("./tmp")?;
-    std::fs::create_dir_all("./tmp")?;
     println!("Starting up file server on port {HOST}:{PORT}");
     HttpServer::new(|| {
         App::new()
