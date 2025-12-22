@@ -3,13 +3,13 @@ use actix_multipart::form::{
     MultipartForm,
     tempfile::{TempFile, TempFileConfig},
 };
-use actix_web::{App, Error, HttpResponse, HttpServer, Responder, post};
+use actix_web::{App, Error, HttpResponse, HttpServer, Responder, post, web};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use hightower_naming::generate_random_name;
 
 #[derive(Debug, MultipartForm)]
 struct UploadForm {
-    #[multipart(rename = "file", limit = "5MB")]
+    #[multipart(limit = "5MB")]
     file: TempFile,
 }
 
@@ -22,8 +22,8 @@ async fn save_files(
     MultipartForm(form): MultipartForm<UploadForm>,
     cred: BearerAuth,
 ) -> Result<impl Responder, Error> {
-    let mut file = String::new();
     if cred.token() == AUTH {
+        let mut file = String::new();
         let f = form.file;
         let path: String;
         if let Some(s) = f.file_name {
@@ -31,18 +31,15 @@ async fn save_files(
             let split: Vec<_> = s.split(".").collect();
             if split.len() > 1 {
                 let extension = split[split.len() - 1];
-                path = format!("./tmp/{}.{}", filename, extension);
-                file.push_str(&filename);
-                file.push_str(".");
-                file.push_str(&extension);
+                path = format!("./tmp/{}.{}", &filename, &extension);
+                file = format!("{}.{}\n", &filename, &extension);
             } else {
-                path = format!("./tmp/{}", filename);
-                file.push_str(&filename);
+                path = format!("./tmp/{}", &filename);
+                file = format!("{}\n", &filename);
             }
             f.file.persist(&path).ok();
         };
-        file.push('\n');
-        let url = format!("http://{}:{}/{}", HOST, PORT, file);
+        let url = format!("http://{}:{}/{}", HOST, PORT, &file);
         Ok(HttpResponse::Ok().body(url))
     } else {
         Ok(HttpResponse::Unauthorized().body("Invalid auth token.\n"))
@@ -58,6 +55,9 @@ async fn main() -> std::io::Result<()> {
             .app_data(TempFileConfig::default().directory("./tmp"))
             .service(save_files)
             .service(Files::new("/", "./tmp").index_file("../index.html"))
+            .default_service(web::to(|| async {
+                HttpResponse::NotFound().body("File expired or does not exist.")
+            }))
     })
     .bind((HOST, PORT.parse().expect("Error converting port to number")))?
     .run()
