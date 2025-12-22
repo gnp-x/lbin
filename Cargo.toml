@@ -1,0 +1,9 @@
+[package]
+name = "liminalbin"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+actix-multipart = "0.7.2"
+actix-web = "4.12.1"
+uuid = {version="1.19.0", features=["v4"]}
