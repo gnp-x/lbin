@@ -52,7 +52,7 @@ async fn save_files(
                     .expect("Unable to delete file");
             });
         };
-        let url = format!("http://{}/{}", HOST, &file);
+        let url = format!("https://{}/{}", HOST, &file);
         // let dev_url = format!("http://{}:{}/{}", HOST, PORT, &file);
         Ok(HttpResponse::Ok().body(url))
     } else {
