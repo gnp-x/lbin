@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{fs, time::Duration};
 
 use actix_files::Files;
 use actix_multipart::form::{
@@ -63,6 +63,7 @@ async fn save_files(
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    fs::create_dir_all("./tmp")?;
     println!("Starting up file server on port {HOST}:{PORT}");
     HttpServer::new(|| {
         App::new()
