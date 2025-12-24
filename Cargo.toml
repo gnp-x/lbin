@@ -10,3 +10,10 @@ actix-web = "4.12.1"
 actix-web-httpauth = "0.8.2"
 hightower-naming = "0.1.4"
 tokio = "1.48.0"
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'
+strip = true
