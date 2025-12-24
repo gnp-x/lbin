@@ -1,6 +1,0 @@
-[env]
-lbin_host="localhost"
-lbin_url ="https://test.liminal.cafe"
-lbin_port="3696"
-lbin_auth="testing"
-lbin_life="6"
