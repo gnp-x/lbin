@@ -18,6 +18,7 @@ struct UploadForm {
 const PORT: &'static str = env!("lbin_port");
 const HOST: &'static str = env!("lbin_host");
 const AUTH: &'static str = env!("lbin_auth");
+const URL: &'static str = env!("lbin_url");
 const LIFESPAN: &'static str = env!("lbin_life");
 
 #[post("/")]
@@ -52,8 +53,8 @@ async fn save_files(
                     .expect("Unable to delete file");
             });
         };
-        let url = format!("https://{}/{}", HOST, &file);
-        // let dev_url = format!("http://{}:{}/{}", HOST, PORT, &file);
+        let url = format!("{}/{}", URL, &file);
+        // let dev_url = format!("{}:{}/{}", HOST, PORT, &file);
         Ok(HttpResponse::Ok().body(url))
     } else {
         Ok(HttpResponse::Unauthorized().body("Invalid auth token.\n"))
