@@ -25,4 +25,4 @@ cargo build --release --config config.toml
 ```sh
 curl -F "file=@some_file_here" -H "Authorization: Bearer <AUTH_CODE_HERE>" <URL_HERE>
 ```
-Or you can use [lbin-cli](/gnp/lbin-cli) for a more intuitive experience.
+Or you can use [lbin-cli](https://codeberg.org/gnp/lbin-cli) for a more intuitive experience.
