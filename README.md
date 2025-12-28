@@ -20,3 +20,9 @@ After you have your config file, you can then compile it.
 ```
 cargo build --release --config config.toml
 ```
+
+## usage
+```sh
+curl -F "file=@some_file_here" -H "Authorization: Bearer <AUTH_CODE_HERE>" <URL_HERE>
+```
+Or you can use [lbin-cli](/gnp/lbin-cli) for a more intuitive experience.
