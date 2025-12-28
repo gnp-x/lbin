@@ -12,7 +12,7 @@ lbin_host="localhost"
 lbin_url ="https://root_url_for_hosted_files.com"
 lbin_port="8000"
 lbin_auth="auth_code_here"
-lbin_life="6" // hour increments
+lbin_life="6" # hour increments
 ```
 
 After you have your config file, you can then compile it.
