@@ -22,7 +22,7 @@ cargo build --release --config config.toml
 
 ## usage
 ```sh
-# basic
+# expires after 6 hours
 curl -F "file=@some_file_here" -H "Authorization: Bearer <AUTH_CODE_HERE>" <URL_HERE>
 ```
 ```sh
