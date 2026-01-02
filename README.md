@@ -29,4 +29,3 @@ curl -F "file=@some_file_here" -H "Authorization: Bearer <AUTH_CODE_HERE>" <URL_
 # file expires in 5 minutes
 curl -F "file=@some_file_here" -F "time=5" -H "Authorization: Bearer <AUTH_CODE_HERE>" <URL_HERE>
 ```
-Or you can use [lbin-cli](https://codeberg.org/gnp/lbin-cli) for a more intuitive experience.
