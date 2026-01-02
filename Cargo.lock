@@ -292,12 +292,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "anyhow"
-version = "1.0.100"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
-
-[[package]]
 name = "base64"
 version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -870,13 +864,12 @@ checksum = "d4345964bb142484797b161f473a503a434de77149dd8c7427788c6e13379388"
 
 [[package]]
 name = "lbin"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "actix-files",
  "actix-multipart",
  "actix-web",
  "actix-web-httpauth",
- "anyhow",
  "hightower-naming",
  "tokio",
 ]

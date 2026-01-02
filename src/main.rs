@@ -15,36 +15,12 @@ struct UploadForm {
     #[multipart(limit = "5MB")]
     file: TempFile,
     time: Option<Text<u64>>,
-    oneshot: Option<Text<bool>>,
 }
-
-// #[derive(Debug, MultipartForm)]
-// struct OneShotForm {
-//     #[multipart(limit = "5MB")]
-//     file: TempFile,
-//     seen: Text<bool>,
-// }
 
 const PORT: &'static str = env!("lbin_port");
 const HOST: &'static str = env!("lbin_host");
 const AUTH: &'static str = env!("lbin_auth");
 const URL: &'static str = env!("lbin_url");
-
-// #[post("/oneshot")]
-// async fn oneshot_post(
-//     MultipartForm(form): MultipartForm<OneShotForm>,
-//     cred: BearerAuth,
-// ) -> Result<impl Responder, Error> {
-//     if cred.token() != AUTH {
-//         Ok(HttpResponse::Unauthorized().body("Invalid auth token.\n"))
-//     } else {
-//         let (path, file) = file_helper(&form.file);
-//         form.file.file.persist(&path);
-//         // format!("{}/{}", URL, &file);
-//         let url = format!("http://{}:{}/{}", HOST, PORT, &file);
-//         Ok(HttpResponse::Ok().body(url))
-//     }
-// }
 
 #[post("/")]
 async fn default_post(
@@ -54,12 +30,12 @@ async fn default_post(
     if cred.token() != AUTH {
         Ok(HttpResponse::Unauthorized().body("Invalid auth token.\n"))
     } else {
-        let expiry = if let Some(n) = form.time { n.0 } else { 6 * 60 };
+        let expiry = if let Some(n) = form.time { n.0 } else { 5 };
         let mut interval = tokio::time::interval(Duration::from_mins(expiry));
         let (path, file) = file_helper(&form.file);
         form.file.file.persist(&path).ok();
-        let url = format!("http://{}:{}/{}", HOST, PORT, &file);
-        // format!("{}/{}", URL, &file);
+        let url = format!("{}/{}", URL, &file);
+
         tokio::spawn(async move {
             interval.tick().await;
             interval.tick().await;
