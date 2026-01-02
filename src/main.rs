@@ -55,7 +55,6 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(TempFileConfig::default().directory("./tmp"))
             .service(default_post)
-            // .service(oneshot_post)
             .service(Files::new("/", "./tmp").index_file("../index.html"))
             .default_service(web::to(|| async {
                 HttpResponse::NotFound().body("File expired or does not exist.")
