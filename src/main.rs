@@ -30,7 +30,7 @@ async fn default_post(
     if cred.token() != AUTH {
         Ok(HttpResponse::Unauthorized().body("Invalid auth token.\n"))
     } else {
-        let expiry = if let Some(n) = form.time { n.0 } else { 5 };
+        let expiry = if let Some(n) = form.time { n.0 } else { 6 * 60 };
         let mut interval = tokio::time::interval(Duration::from_mins(expiry));
         let (path, file) = file_helper(&form.file);
         form.file.file.persist(&path).ok();
