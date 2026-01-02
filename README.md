@@ -23,9 +23,9 @@ cargo build --release --config config.toml
 ## usage
 ```sh
 # expires after 6 hours
-curl -F "file=@some_file_here" -H "Authorization: Bearer <AUTH_CODE_HERE>" <URL_HERE>
+curl -F "file=@some_file_here" -H "Authorization: Bearer <AUTH_CODE_HERE>" https://bin.liminal.cafe
 ```
 ```sh
 # file expires in 5 minutes
-curl -F "file=@some_file_here" -F "time=5" -H "Authorization: Bearer <AUTH_CODE_HERE>" <URL_HERE>
+curl -F "file=@some_file_here" -F "time=5" -H "Authorization: Bearer <AUTH_CODE_HERE>" https://bin.liminal.cafe
 ```
