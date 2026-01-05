@@ -6,7 +6,10 @@ use actix_multipart::form::{
     tempfile::{TempFile, TempFileConfig},
     text::Text,
 };
-use actix_web::{App, Error, HttpResponse, HttpServer, Responder, post, web};
+use actix_web::{
+    App, Error, HttpResponse, HttpServer, Responder, post,
+    web::{self},
+};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use hightower_naming::generate_random_name;
 
@@ -15,6 +18,7 @@ struct UploadForm {
     #[multipart(limit = "5MB")]
     file: TempFile,
     time: Option<Text<u64>>,
+    oneshot: Option<Text<bool>>,
 }
 
 const PORT: &'static str = env!("lbin_port");
@@ -30,20 +34,28 @@ async fn default_post(
     if cred.token() != AUTH {
         Ok(HttpResponse::Unauthorized().body("Invalid auth token.\n"))
     } else {
-        let expiry = if let Some(n) = form.time { n.0 } else { 6 * 60 };
-        let mut interval = tokio::time::interval(Duration::from_mins(expiry));
         let (path, file) = file_helper(&form.file);
-        form.file.file.persist(&path).ok();
-        let url = format!("{}/{}", URL, &file);
-
-        tokio::spawn(async move {
-            interval.tick().await;
-            interval.tick().await;
-            tokio::fs::remove_file(&path)
-                .await
-                .expect("Unable to delete file");
-        });
-        Ok(HttpResponse::Ok().body(url))
+        // let url = format!("{}/{}", URL, &file);
+        if let Some(b) = form.oneshot {
+            if b.0 {
+                let url = format!("http://localhost:3696/o/{}", &file);
+                form.file.file.persist(&path).ok();
+                Ok(HttpResponse::Ok().body(url))
+            } else {
+                Ok(HttpResponse::Ok().body("Oneshot is not needed."))
+            }
+        } else {
+            let url = format!("http://localhost:3696/{}", &file);
+            let expiry = if let Some(n) = form.time { n.0 } else { 6 * 60 };
+            let mut interval = tokio::time::interval(Duration::from_mins(expiry));
+            form.file.file.persist(&path).ok();
+            tokio::spawn(async move {
+                interval.tick().await;
+                interval.tick().await;
+                tokio::fs::remove_file(path)
+            });
+            Ok(HttpResponse::Ok().body(url))
+        }
     }
 }
 
