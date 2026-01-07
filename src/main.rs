@@ -1,6 +1,6 @@
-use std::{fs, time::Duration};
+use std::{env, fs, time::Duration};
 
-use actix_files::Files;
+use actix_files::{Files, NamedFile};
 use actix_multipart::form::{
     MultipartForm,
     tempfile::{TempFile, TempFileConfig},
@@ -26,9 +26,12 @@ const HOST: &'static str = env!("lbin_host");
 const AUTH: &'static str = env!("lbin_auth");
 const URL: &'static str = env!("lbin_url");
 
-#[get("/{filename}")]
-async fn oneshot_get() -> Result<impl Responder, Error> {
-    Ok(HttpResponse::Ok().body("GET THAT FILE"))
+#[get("/o/{filename}")]
+async fn oneshot_get(path: web::Path<String>) -> Result<impl Responder, Error> {
+    let filename = path.into_inner();
+    let tmp_path = env::current_dir()?.display().to_string();
+    let full_path = format!("{}/tmp/{filename}", tmp_path);
+    Ok(NamedFile::open(full_path)?)
 }
 
 #[post("/")]
@@ -76,6 +79,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(TempFileConfig::default().directory("./tmp"))
             .service(default_post)
+            .service(oneshot_get)
             .service(Files::new("/", "./tmp").index_file("../index.html"))
             .default_service(web::to(|| async {
                 HttpResponse::NotFound().body("File expired or does not exist.")
