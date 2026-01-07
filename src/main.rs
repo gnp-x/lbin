@@ -7,7 +7,7 @@ use actix_multipart::form::{
     text::Text,
 };
 use actix_web::{
-    App, Error, HttpResponse, HttpServer, Responder, post,
+    App, Error, HttpResponse, HttpServer, Responder, get, post,
     web::{self},
 };
 use actix_web_httpauth::extractors::bearer::BearerAuth;
@@ -25,6 +25,11 @@ const PORT: &'static str = env!("lbin_port");
 const HOST: &'static str = env!("lbin_host");
 const AUTH: &'static str = env!("lbin_auth");
 const URL: &'static str = env!("lbin_url");
+
+#[get("/{filename}")]
+async fn oneshot_get() -> Result<impl Responder, Error> {
+    Ok(HttpResponse::Ok().body("GET THAT FILE"))
+}
 
 #[post("/")]
 async fn default_post(
