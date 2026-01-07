@@ -37,12 +37,16 @@ async fn default_post(
         let (path, file) = file_helper(&form.file);
         // let url = format!("{}/{}", URL, &file);
         if let Some(b) = form.oneshot {
-            if b.0 {
-                let url = format!("http://localhost:3696/o/{}", &file);
-                form.file.file.persist(&path).ok();
-                Ok(HttpResponse::Ok().body(url))
-            } else {
-                Ok(HttpResponse::Ok().body("Oneshot is not needed."))
+            match b.0 {
+                true => {
+                    let url = format!("http://localhost:3696/o/{}", &file);
+                    form.file.file.persist(&path).ok();
+                    Ok(HttpResponse::Ok().body(url))
+                }
+                false => {
+                    Ok(HttpResponse::Ok()
+                        .body("Oneshot is not needed. Delete it from curl request."))
+                }
             }
         } else {
             let url = format!("http://localhost:3696/{}", &file);
