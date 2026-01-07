@@ -1,0 +1,19 @@
+[package]
+name = "lbin"
+version = "0.2.0"
+edition = "2024"
+
+[dependencies]
+actix-files = "0.6.9"
+actix-multipart = "0.7.2"
+actix-web = "4.12.1"
+actix-web-httpauth = "0.8.2"
+hightower-naming = "0.1.4"
+tokio = "1.48.0"
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'
+strip = true
