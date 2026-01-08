@@ -2,9 +2,20 @@
 
 A minimal pastebin made for liminal.cafe
 
-## config
+## features
+- default 6 hour expiry of upload
+- custom expiry time in minutes `-F "time=120"`
+- one-shot file (one-time view of file) `post request to <domain_name>/o`
 
-Make a config.toml file in the root directory and fill it with the following:
+## download
+```
+git clone https://git.liminal.cafe/sakura/lbin.git
+cd lbin
+touch config.toml
+```
+
+## config
+Open config.toml and fill it with the following:
 
 ```toml
 [env]
