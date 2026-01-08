@@ -67,7 +67,7 @@ async fn default_post(
         let path = std::env::current_dir()?.display().to_string();
         let file = file_helper(&form.file);
         let full_path = format!("{path}/{TMP}/{file}");
-        let url = format!("{}/{}\n", URL, &file);
+        let url = format!("{}/{file}\n", URL);
         // let dev_url = format!("http://{HOST}:{PORT}/{}\n", &file);
         let expiry = if let Some(n) = form.time { n.0 } else { 6 * 60 };
         let mut interval = tokio::time::interval(Duration::from_mins(expiry));
@@ -75,7 +75,7 @@ async fn default_post(
         tokio::spawn(async move {
             interval.tick().await;
             interval.tick().await;
-            tokio::fs::remove_file(full_path)
+            std::fs::remove_file(full_path)
         });
         Ok(HttpResponse::Ok().body(url))
     }
