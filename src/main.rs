@@ -18,7 +18,6 @@ struct UploadForm {
     #[multipart(limit = "5MB")]
     file: TempFile,
     time: Option<Text<u64>>,
-    oneshot: Option<Text<bool>>,
 }
 
 const PORT: &'static str = env!("port");
