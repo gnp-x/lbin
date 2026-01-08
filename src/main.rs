@@ -1,6 +1,6 @@
 use std::{env, fs, time::Duration};
 
-use actix_files::{Files, NamedFile};
+use actix_files::Files;
 use actix_multipart::form::{
     MultipartForm,
     tempfile::{TempFile, TempFileConfig},
@@ -21,17 +21,38 @@ struct UploadForm {
     oneshot: Option<Text<bool>>,
 }
 
-const PORT: &'static str = env!("lbin_port");
-const HOST: &'static str = env!("lbin_host");
-const AUTH: &'static str = env!("lbin_auth");
-const URL: &'static str = env!("lbin_url");
+const PORT: &'static str = env!("port");
+const HOST: &'static str = env!("host");
+const AUTH: &'static str = env!("auth");
+const URL: &'static str = env!("url");
 
 #[get("/o/{filename}")]
 async fn oneshot_get(path: web::Path<String>) -> Result<impl Responder, Error> {
     let filename = path.into_inner();
-    let tmp_path = env::current_dir()?.display().to_string();
-    let full_path = format!("{}/tmp/{filename}", tmp_path);
-    Ok(NamedFile::open(full_path)?)
+    let path = env::current_dir()?.display().to_string();
+    let full_path = format!("{}/os/{filename}", path);
+    let fp = full_path.to_owned();
+    let content = web::block(move || fs::read(full_path)).await??;
+    web::block(move || std::fs::remove_file(fp)).await??;
+    Ok(HttpResponse::Ok().body(content))
+}
+
+#[post("/o")]
+async fn oneshot_post(
+    MultipartForm(form): MultipartForm<UploadForm>,
+    cred: BearerAuth,
+) -> Result<impl Responder, Error> {
+    if cred.token() != AUTH {
+        Ok(HttpResponse::Unauthorized().body("Invalid auth token.\n"))
+    } else {
+        let file = file_helper(&form.file);
+        let path = std::env::current_dir()?.display().to_string();
+        let full_path = format!("{path}/os/{file}");
+        // let url = format!("{}/{}", URL, &file);
+        let url = format!("http://localhost:3696/o/{}\n", file);
+        form.file.file.persist(full_path).ok();
+        Ok(HttpResponse::Ok().body(url))
+    }
 }
 
 #[post("/")]
@@ -42,45 +63,36 @@ async fn default_post(
     if cred.token() != AUTH {
         Ok(HttpResponse::Unauthorized().body("Invalid auth token.\n"))
     } else {
-        let (path, file) = file_helper(&form.file);
+        let path = std::env::current_dir()?.display().to_string();
+        let file = file_helper(&form.file);
+        let full_path = format!("{path}/tmp/{file}");
         // let url = format!("{}/{}", URL, &file);
-        if let Some(b) = form.oneshot {
-            match b.0 {
-                true => {
-                    let url = format!("http://localhost:3696/o/{}", &file);
-                    form.file.file.persist(&path).ok();
-                    Ok(HttpResponse::Ok().body(url))
-                }
-                false => {
-                    Ok(HttpResponse::Ok()
-                        .body("Oneshot is not needed. Delete it from curl request."))
-                }
-            }
-        } else {
-            let url = format!("http://localhost:3696/{}", &file);
-            let expiry = if let Some(n) = form.time { n.0 } else { 6 * 60 };
-            let mut interval = tokio::time::interval(Duration::from_mins(expiry));
-            form.file.file.persist(&path).ok();
-            tokio::spawn(async move {
-                interval.tick().await;
-                interval.tick().await;
-                tokio::fs::remove_file(path)
-            });
-            Ok(HttpResponse::Ok().body(url))
-        }
+        let url = format!("http://localhost:3696/{}\n", &file);
+        let expiry = if let Some(n) = form.time { n.0 } else { 6 * 60 };
+        let mut interval = tokio::time::interval(Duration::from_mins(expiry));
+        form.file.file.persist(&full_path).ok();
+        tokio::spawn(async move {
+            interval.tick().await;
+            interval.tick().await;
+            tokio::fs::remove_file(full_path)
+        });
+        Ok(HttpResponse::Ok().body(url))
     }
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     fs::create_dir_all("./tmp")?;
+    fs::create_dir_all("./os")?;
     println!("Starting up file server on port {HOST}:{PORT}");
     HttpServer::new(|| {
         App::new()
             .app_data(TempFileConfig::default().directory("./tmp"))
             .service(default_post)
+            .service(oneshot_post)
             .service(oneshot_get)
             .service(Files::new("/", "./tmp").index_file("../index.html"))
+            .service(Files::new("/o", "./os").index_file("../index.html"))
             .default_service(web::to(|| async {
                 HttpResponse::NotFound().body("File expired or does not exist.")
             }))
@@ -90,20 +102,17 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-fn file_helper(file: &TempFile) -> (String, String) {
-    let mut path = String::new();
+fn file_helper(file: &TempFile) -> String {
     let mut final_file = String::new();
     if let Some(f) = &file.file_name {
         let filename = generate_random_name(None);
         let split: Vec<_> = f.split(".").collect();
         if split.len() > 1 {
             let extension = split[split.len() - 1];
-            path = format!("./tmp/{}.{}", &filename, &extension);
-            final_file = format!("{}.{}\n", &filename, &extension);
+            final_file = format!("{}.{}", &filename, extension);
         } else {
-            path = format!("./tmp/{}", &filename);
-            final_file = format!("{}\n", &filename);
+            final_file = format!("{}", &filename);
         }
     }
-    (path, final_file)
+    final_file
 }
