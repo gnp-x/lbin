@@ -8,10 +8,12 @@ Make a config.toml file in the root directory and fill it with the following:
 
 ```toml
 [env]
-lbin_host="localhost"
-lbin_url ="https://root_url_for_hosted_files.com"
-lbin_port="8000"
-lbin_auth="auth_code_here"
+host="localhost"
+url ="https://root_url_for_hosted_files.com"
+port="8000"
+auth="auth_code_here"
+tmp="temp_folder_name_here"
+os="oneshot_folder_name_here"
 ```
 
 After you have your config file, you can then compile it.
